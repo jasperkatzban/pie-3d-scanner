@@ -7,7 +7,7 @@
  https://www.arduino.cc/en/Tutorial/LibraryExamples/Sweep
 */
 
-#include <Servo.h>
+#include <./servo/Servo.h>
 
 Servo myservo;  // create servo object to control a servo
 // twelve servo objects can be created on most boards

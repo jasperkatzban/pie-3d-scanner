@@ -1,4 +1,6 @@
 {
     "board": "arduino:avr:uno",
-    "programmer": "arduino:avrispmkii"
+    "programmer": "arduino:avrispmkii",
+    "sketch": "src/scanner.ino",
+    "port": "/dev/cu.usbmodem11101"
 }
