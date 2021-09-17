@@ -73,14 +73,22 @@ void scan(){
       }
       myservo2.write(angle_x);
       int sensor_val = analogRead(SENSOR_PIN); 
-      save_position(y, x , sensor_val); 
+      send_position(y, x , sensor_val); 
       delay(100);                       // waits 15 ms for the servo to reach the position
     }
   }
 }
 
-void save_position(uint8_t y, uint8_t x, uint16_t sensordata){
+void save_position(int y, int x, int sensordata){
   data[y][x] = sensordata; 
+}
+
+void send_position(int y, int x, int sensordata){
+  Serial.print(y*RESOLUTION);
+  Serial.print("\t");
+  Serial.print(x*RESOLUTION);
+  Serial.print("\t");
+  Serial.println(sensordata);
 }
 
 void send_captured_data() {
