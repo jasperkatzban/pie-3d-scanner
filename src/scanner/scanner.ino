@@ -15,8 +15,8 @@
 #define NUM_POINTS_X 36
 
 // create servo object to control a servo
-Servo myservo1;
-Servo myservo2;
+Servo servo_y;
+Servo servo_x;
 
 // define pins
 const int BUTTON_PIN = 8; 
@@ -31,10 +31,10 @@ uint32_t debounce_time;
 bool button_went_back_low;
 
 void setup() {
-  long baudRate = 9600; // initialize serial comms
-  Serial.begin(baudRate); 
-  myservo1.attach(9);  // attaches the servo on pin 9 to the servo object
-  myservo2.attach(10);
+  long baudRate = 115200; // initialize serial comms
+  Serial.begin(115200);
+  servo_y.attach(9);  // attaches the servo on pin 9 to the servo object
+  servo_x.attach(10);
 }
 
 void loop() {
@@ -50,7 +50,7 @@ void loop() {
     if (button_went_back_low && button_high) {
       // if button is actually pressed
       scan(); // scan the field
-      send_captured_data(); // send data via serial port
+      // send_captured_data(); // send data via serial port
       button_went_back_low = false;
     } else if (!button_went_back_low && !button_high) {
       button_went_back_low = true;
@@ -63,7 +63,7 @@ void loop() {
 void scan(){
   for (int y = 0; y < 36; y++) { // goes from 0 degrees to 180 degrees
     int angle_y = y * RESOLUTION;
-    myservo1.write(angle_y); 
+    servo_y.write(angle_y); 
     for (int x = 0; x < 36; x++) { // goes from 180 degrees to 0 degrees  
       int angle_x;
       if(y%2 == 0){
@@ -71,10 +71,10 @@ void scan(){
       } else {
         angle_x = 180 - x * RESOLUTION; 
       }
-      myservo2.write(angle_x);
+      servo_x.write(angle_x);
+      delay(100);                       // waits 100 ms for the servo to reach the position
       int sensor_val = analogRead(SENSOR_PIN); 
       send_position(y, x , sensor_val); 
-      delay(100);                       // waits 15 ms for the servo to reach the position
     }
   }
 }
@@ -84,22 +84,10 @@ void save_position(int y, int x, int sensordata){
 }
 
 void send_position(int y, int x, int sensordata){
-  Serial.print(y*RESOLUTION);
-  Serial.print("\t");
-  Serial.print(x*RESOLUTION);
-  Serial.print("\t");
+  Serial.print(y * RESOLUTION);
+  Serial.print(",");
+  Serial.print(x * RESOLUTION);
+  Serial.print(",");
   Serial.println(sensordata);
-}
-
-void send_captured_data() {
-  Serial.println();
-  for (uint8_t x; x < NUM_POINTS_Y; x++){
-    for (uint8_t y; y < NUM_POINTS_X; y++){
-      Serial.print(y*RESOLUTION);
-      Serial.print("\t");
-      Serial.print(x*RESOLUTION);
-      Serial.print("\t");
-      Serial.println(data[y][x]);
-    }
-  }
+  Serial.flush();
 }

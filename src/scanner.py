@@ -1,26 +1,4 @@
-#      ******************************************************************
-#      *                                                                *
-#      *                                                                *
-#      *    Example Python program that receives data from an Arduino   *
-#      *                                                                *
-#      *                                                                *
-#      ******************************************************************
-
-
 import serial
-
-#
-# Note 1: This python script was designed to run with Python 3.
-#
-# Note 2: The script uses "pyserial" which must be installed.  If you have
-#         previously installed the "serial" package, it must be uninstalled
-#         first.
-#
-# Note 3: While this script is running you can not re-program the Arduino.
-#         Before downloading a new Arduino sketch, you must exit this
-#         script first.
-#
-
 
 #
 # Set the name of the serial port.  Determine the name as follows:
@@ -29,7 +7,7 @@ import serial
 #
 # For Windows computers, the name is formatted like: "COM6"
 # For Apple computers, the name is formatted like: "/dev/tty.usbmodemfa141"
-#
+
 arduinoComPort = "/dev/tty.usbmodemfa141"
 
 
@@ -47,11 +25,8 @@ baudRate = 9600
 #
 serialPort = serial.Serial(arduinoComPort, baudRate, timeout=1)
 
+rawdata = []
 
-
-#
-# main loop to read data from the Arduino, then display it
-#
 while True:
   #
   # ask for a line of data from the serial port, the ".decode()" converts the
@@ -63,15 +38,7 @@ while True:
   # check if data was received
   #
   if len(lineOfData) > 0:
-    #
-    # data was received, convert it into 4 integers
-    #
-    a, b, c, d = (int(x) for x in lineOfData.split(','))
-
-    #
-    # print the results
-    #
-    print("a = " + str(a), end="")
-    print(", b = " + str(b), end="")
-    print(", c = " + str(c), end="")
-    print(", d = " + str(d))
+    print("printed in python")
+    print(lineOfData)
+    rawdata.append(lineOfData)
+   
