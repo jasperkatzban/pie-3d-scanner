@@ -1,6 +1,7 @@
-import serial
-
-#
+from serial_cmd import Serial_cmd
+from numpy import sin, cos
+import csv
+  
 # Set the name of the serial port.  Determine the name as follows:
 #	1) From Arduino's "Tools" menu, select "Port"
 #	2) It will show you which Port is used to connect to the Arduino
@@ -8,37 +9,62 @@ import serial
 # For Windows computers, the name is formatted like: "COM6"
 # For Apple computers, the name is formatted like: "/dev/tty.usbmodemfa141"
 
-arduinoComPort = "/dev/tty.usbmodemfa141"
+ARDUINO_COM_PORT = '/dev/cu.usbmodem1401'
+MSG_SCAN_START = 'start'
+MSG_SCAN_END = 'done'
 
+file_num_tracker = 0
+serial_port = Serial_cmd(ARDUINO_COM_PORT)
 
-#
-# Set the baud rate
-# NOTE1: The baudRate for the sending and receiving programs must be the same!
-# NOTE2: For faster communication, set the baudRate to 115200 below
-#        and check that the arduino sketch you are using is updated as well.
-#
-baudRate = 9600
+# [OLD] open the serial port
+# baudRate = 1152000
+# serialPort = serial.Serial(ARDUINO_COM_PORT, baudRate, timeout=1)
 
+raw_data = []
 
-#
-# open the serial port
-#
-serialPort = serial.Serial(arduinoComPort, baudRate, timeout=1)
+def start_reading():
+  # raw_data.clear()
+  # f = open('data/sensor_reading' + str(file_num_tracker), 'w')
+  # writer = csv.writer(f)
 
-rawdata = []
+def save_data(input_data):
+  '''Saves data to a file (or whatever datastructure we use)'''
+  split_data = input_data.split(",")
+  x = split_data[0]
+  y = split_data[1]
+  sensor_reading = split_data[2]
+  print(sensor_reading)
+  raw_data.append([x, y, sensor_reading]) 
 
-while True:
-  #
-  # ask for a line of data from the serial port, the ".decode()" converts the
-  # data from an "array of bytes", to a string
-  #
-  lineOfData = serialPort.readline().decode()
+def convert_to_cartesian(theta, phi, r):
+  '''Converts from spherical coords to cartesian coords'''
+  x = r * sin(theta) * cos(phi)
+  y = r * sin(theta) * sin(phi)
+  z = r * cos(theta)
+  return x, y, z
 
-  #
-  # check if data was received
-  #
-  if len(lineOfData) > 0:
-    print("printed in python")
-    print(lineOfData)
-    rawdata.append(lineOfData)
-   
+def plot_data(data):
+  '''Plots data using matplotlib'''
+  pass
+
+def reset():
+  if raw_data is not []:
+    raw data = []
+
+while serial_port.connected:
+
+  # read msg from serial port
+  message = serial_port.read()
+
+  # parse msg type
+  if message == MSG_SCAN_START:
+    print('Starting scan!')
+    reset()
+    start_reading()
+  elif message == MSG_SCAN_END:
+    print('Finished reading data!')
+    print(raw_data)
+    plot_data()
+  else:
+    print(f'Saving message: {message}.')
+    save_data(message)

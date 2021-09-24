@@ -8,7 +8,7 @@ class Serial_cmd:
                    (0x2A03, 0x0043), (0x2341, 0x0243),
                    (0x0403, 0x6001), (0x1A86, 0x7523))
 
-    def __init__(self, port = ''):
+    def __init__(self, port = ''):  
         if port == '':
             self.dev = None
             self.connected = False
@@ -18,9 +18,9 @@ class Serial_cmd:
                     try:
                         self.dev = serial.Serial(device.device, BAUD_RATE)
                         self.connected = True
-                        print(f'Connected to {device.device}...')
+                        print(f'Connected to {device.device}')
                     except:
-                        print(f'Could not connect to device!')
+                        print('Could not connect to device!')
                 if self.connected:
                     break
         else:
