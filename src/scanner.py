@@ -1,5 +1,5 @@
 from serial_cmd import Serial_cmd
-from numpy import sin, cos, mgrid, power, empty
+from numpy import sin, cos, mgrid, power, empty, array2string
 from numpy.random.mtrand import randint
 from matplotlib import cbook
 import matplotlib.pyplot as plt
@@ -23,15 +23,16 @@ serial_port = Serial_cmd()
 print('Ready to scan! Press the button on the breadboard to begin.')
 
 spherical_data = empty(shape=(NUM_POINTS_THETA,NUM_POINTS_PHI), dtype=float)
-cartesian_data = empty(shape=(NUM_POINTS_THETA,NUM_POINTS_PHI), dtype=float)
+cartesian_data_x = empty(shape=(NUM_POINTS_THETA,NUM_POINTS_PHI), dtype=float)
+cartesian_data_y = empty(shape=(NUM_POINTS_THETA,NUM_POINTS_PHI), dtype=float)
+cartesian_data_z = empty(shape=(NUM_POINTS_THETA,NUM_POINTS_PHI), dtype=float)
 
-# TODO: optionally write to file
-def start_reading():
-  '''Writes recorded data to a file'''
-  # spherical_data.clear()
-  # f = open('data/sensor_reading' + str(file_num_tracker), 'w')
-  # writer = csv.writer(f)
-  pass
+def save_to_file(data):
+  global file_num_tracker
+  with open('data/sensor_reading_' + str(file_num_tracker), 'w') as csv:
+    csv.write(array2string(data))
+    
+  file_num_tracker += 1
 
 def save_data(input_data):
   '''Saves raw input to a list in the format [[theta, phi, radius]...]'''
@@ -41,7 +42,9 @@ def save_data(input_data):
   index_x, index_y = int((theta-THETA_ANGLE_OFFSET)/RESOLUTION)-1, int((phi-PHI_ANGLE_OFFSET)/RESOLUTION)-1
   spherical_data[index_x, index_y] = r
   x, y, z = convert_to_cartesian(theta, phi, r)
-  cartesian_data[index_x, index_y] = z
+  cartesian_data_x[index_x, index_y] = x
+  cartesian_data_y[index_x, index_y] = y
+  cartesian_data_z[index_x, index_y] = z
   print(f'Params - theta: {theta}\tphi: {phi}\tSensor: {sensor_reading}\tr: {r:.2f}\t x: {x:.2f}\t y:{y:.2f}\tz: {z:.2f}')
 
 def convert_to_cartesian(theta, phi, r):
@@ -60,11 +63,11 @@ def parse_message(message):
   return [int(value) for value in split_data]
 
 #TODO: plot with units, maybe plot cartesian data too
-def plot_data(data):
+def plot_data(data, title=''):
   '''Plots data using matplotlib'''
   ls = LightSource(azdeg=315, altdeg=45)
   plt.imshow(ls.hillshade(data), cmap='gray')
-  plt.title('Spherical Data, Calibrated')
+  plt.title(title)
   plt.xlabel('Yaw (Degrees)')
   plt.ylabel('Pitch (Degrees)')
   plt.colorbar()
@@ -87,11 +90,20 @@ while serial_port.connected:
   if MSG_SCAN_START in message:
     print('Starting scan!')
     reset()
-    start_reading()
   # when done, plot data and exit
   elif MSG_SCAN_END in message:
     print('Finished reading data!')
-    plot_data(spherical_data)
+    print('Spherical Data:\n')
+    print(spherical_data)
+    # print('Cartesian Data:\n')
+    # print(cartesian_data_x)
+    save_to_file(spherical_data)
+    save_to_file(cartesian_data_x)
+    save_to_file(cartesian_data_y)
+    save_to_file(cartesian_data_z)
+    plot_data(cartesian_data_x, 'Cartesian Data (X), Calibrated')
+    plot_data(cartesian_data_y, 'Cartesian Data (Y), Calibrated')
+    plot_data(cartesian_data_z, 'Cartesian Data (Z), Calibrated')
     exit(0)
   # otherwise, assume message is data and parse
   else:
