@@ -1,4 +1,5 @@
-import serial
+from serial import Serial
+from serial.tools import list_ports
 
 BAUD_RATE = 115200
 
@@ -12,11 +13,11 @@ class Serial_cmd:
         if port == '':
             self.dev = None
             self.connected = False
-            devices = serial.tools.list_ports.comports()
+            devices = list_ports.comports()
             for device in devices:
                 if (device.vid, device.pid) in Serial_cmd.Arduino_IDs:
                     try:
-                        self.dev = serial.Serial(device.device, BAUD_RATE)
+                        self.dev = Serial(device.device, BAUD_RATE)
                         self.connected = True
                         print(f'Connected to {device.device}')
                     except:
@@ -25,7 +26,7 @@ class Serial_cmd:
                     break
         else:
             try:
-                self.dev = serial.Serial(port, BAUD_RATE)
+                self.dev = Serial(port, BAUD_RATE)
                 self.connected = True
             except:
                 self.dev = None
