@@ -2,13 +2,13 @@
 
 // define measurement resolution
 #define RESOLUTION 5
-#define NUM_POINTS_THETA 18
-#define NUM_POINTS_PHI 18
-#define THETA_ANGLE_OFFSET 45
-#define PHI_ANGLE_OFFSET 45
+#define NUM_POINTS_THETA 10 
+#define NUM_POINTS_PHI 10
+#define THETA_ANGLE_OFFSET 25
+#define PHI_ANGLE_OFFSET 55
 #define THETA_CENTER_ANGLE 90
 #define PHI_CENTER_ANGLE 90
-#define MOVEMENT_DELAY_MS 200
+#define MOVEMENT_DELAY_MS 500
 
 // create servo object to control a servo
 Servo servo_theta;
@@ -62,13 +62,13 @@ void scan(){
   Serial.println("start");
   for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // left and right
     int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET;
-    servo_phi.write(angle_phi);
     for (int theta = 0; theta <= NUM_POINTS_THETA; theta++) { // up and down
       int angle_theta;
       angle_theta = (theta * RESOLUTION) + THETA_ANGLE_OFFSET;         
       if(phi%2 != 0) {
-        angle_theta = 180 - angle_theta; 
+        angle_theta = (NUM_POINTS_THETA*RESOLUTION) - angle_theta + 2*THETA_ANGLE_OFFSET; 
       }
+      servo_phi.write(angle_phi);
       servo_theta.write(angle_theta); 
       delay(MOVEMENT_DELAY_MS); // wait for the servo to reach the position
       int sensor_val = analogRead(SENSOR_PIN); 
