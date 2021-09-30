@@ -41,7 +41,7 @@ def save_data(input_data):
   theta, phi, sensor_reading = parse_message(message)
   r = calibrate(sensor_reading)
   
-  index_x, index_y = int((theta-THETA_ANGLE_OFFSET)/RESOLUTION)-1, int((phi-PHI_ANGLE_OFFSET)/RESOLUTION)-1
+  index_x, index_y = int((theta-THETA_ANGLE_OFFSET)/RESOLUTION), int((phi-PHI_ANGLE_OFFSET)/RESOLUTION)
   spherical_data[index_x, index_y] = r
   x, y, z = convert_to_cartesian(theta, phi, r)
   cartesian_data_x[index_x, index_y] = x
