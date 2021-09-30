@@ -1,11 +1,13 @@
 from serial_cmd import Serial_cmd
-from numpy import sin, cos, mgrid, power, empty, array2string
+from numpy import sin, cos, mgrid, power, empty, array2string, zeros, sqrt
 from numpy.random.mtrand import randint
 from matplotlib import cbook
 import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource
 import csv
 from sys import exit
+
+LOCAL_TEST = True
 
 MSG_SCAN_START = 'start'
 MSG_SCAN_END = 'done'
@@ -77,35 +79,45 @@ def reset():
   '''Resets program'''
   pass
 
-def generate_test_data():
+def generate_test_data_rand():
   '''Generates randomized test data'''
   r = randint(0, 1024, size=(NUM_POINTS_THETA, NUM_POINTS_PHI))
   return r
 
-while serial_port.connected:
-  # read msg from serial port
-  message = serial_port.read()
-  print(f'Received message: {message}')
-  # parse msg type
-  if MSG_SCAN_START in message:
-    print('Starting scan!')
-    reset()
-  # when done, plot data and exit
-  elif MSG_SCAN_END in message:
-    print('Finished reading data!')
-    print('Spherical Data:\n')
-    print(spherical_data)
-    # print('Cartesian Data:\n')
-    # print(cartesian_data_x)
-    save_to_file(spherical_data)
-    save_to_file(cartesian_data_x)
-    save_to_file(cartesian_data_y)
-    save_to_file(cartesian_data_z)
-    plot_data(cartesian_data_x, 'Cartesian Data (X), Calibrated')
-    plot_data(cartesian_data_y, 'Cartesian Data (Y), Calibrated')
-    plot_data(cartesian_data_z, 'Cartesian Data (Z), Calibrated')
-    exit(0)
-  # otherwise, assume message is data and parse
-  else:
-    print(f'Saving data')
-    save_data(message)
+def generate_test_data_func():
+  '''Generates test data based on a circular sin func'''
+  x_bound, y_bound = int(NUM_POINTS_THETA/2), int(NUM_POINTS_PHI/2)
+  x, y = mgrid[-x_bound:x_bound:.1, -y_bound:y_bound:.1]
+  r = 5 * (sqrt(x**2 + y**2) + sin(x**2 + y**2))
+  return r
+
+if LOCAL_TEST:
+  plot_data(generate_test_data_func(), 'Test Data')
+else:
+  while serial_port.connected:
+    # read msg from serial port
+    message = serial_port.read()
+    print(f'Received message: {message}')
+    # parse msg type
+    if MSG_SCAN_START in message:
+      print('Starting scan!')
+      reset()
+    # when done, plot data and exit
+    elif MSG_SCAN_END in message:
+      print('Finished reading data!')
+      print('Spherical Data:\n')
+      print(spherical_data)
+      # print('Cartesian Data:\n')
+      # print(cartesian_data_x)
+      save_to_file(spherical_data)
+      save_to_file(cartesian_data_x)
+      save_to_file(cartesian_data_y)
+      save_to_file(cartesian_data_z)
+      plot_data(cartesian_data_x, 'Cartesian Data (X), Calibrated')
+      plot_data(cartesian_data_y, 'Cartesian Data (Y), Calibrated')
+      plot_data(cartesian_data_z, 'Cartesian Data (Z), Calibrated')
+      exit(0)
+    # otherwise, assume message is data and parse
+    else:
+      print(f'Saving data')
+      save_data(message)
