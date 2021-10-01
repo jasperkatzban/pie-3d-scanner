@@ -12,16 +12,20 @@
 
 #include <Servo.h>
 
+// set scanning mode for either a 2d array
+// of points or 3d point cloud
+#define SCAN_MODE_2D true
+
 // define scanning macros
-#define RESOLUTION 0.5
-#define NUM_POINTS_THETA 80 
-#define NUM_POINTS_PHI 80
-#define THETA_ANGLE_OFFSET 35
-#define PHI_ANGLE_OFFSET 45
-#define THETA_CENTER_ANGLE 90
-#define PHI_CENTER_ANGLE 90
-#define MOVEMENT_DELAY_MS 100
-#define NUM_SAMPLES_PER_ANGLE 10
+#define RESOLUTION 1
+#define NUM_POINTS_THETA 60
+#define NUM_POINTS_PHI 60
+#define THETA_ANGLE_OFFSET 30
+#define PHI_ANGLE_OFFSET 37
+#define THETA_CENTER_ANGLE 60
+#define PHI_CENTER_ANGLE 65
+#define MOVEMENT_DELAY_MS 400 // 400 is a good value
+#define NUM_SAMPLES_PER_ANGLE 30
 
 // define start/stop messages
 #define MSG_SCAN_START "start"
@@ -41,14 +45,13 @@ const uint8_t SENSOR_PIN = A0;
 #define SERIAL_BAUD_RATE 115200
 
 // initialize data structure for measured data
-int data[NUM_POINTS_THETA][NUM_POINTS_PHI] = {}; 
+int data[NUM_POINTS_THETA][NUM_POINTS_PHI] = {};
 
 // define debounce vars
 const uint8_t DEBOUNCE_INTERVAL = 10;
 uint32_t debounce_time;
 bool button_went_back_low;
 
-bool oneservo = false; 
 
 // set up serial comms and servos
 void setup() {
@@ -81,10 +84,10 @@ void loop() {
 // scan across field using servos and sends sensor readings via serial
 void scan(){
   Serial.println(MSG_SCAN_START); // send starting message
-  if (oneservo){
-    one_servo_scan(); 
+  if (SCAN_MODE_2D){
+    servo_scan_2d(); 
   } else {
-    two_servo_scan(); 
+    servo_scan_3d(); 
   }
   // print end message and reset servo position
   Serial.println(MSG_SCAN_END);
@@ -92,7 +95,7 @@ void scan(){
 }
 
 // perform 2D scan with one servo, setting other to center angle
-void one_servo_scan(){
+void servo_scan_2d(){
   for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // left and right
     int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET;
     servo_phi.write(angle_phi);
@@ -104,7 +107,7 @@ void one_servo_scan(){
 }
 
 // perform scan using both servos
-void two_servo_scan(){
+void servo_scan_3d(){
   for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // left and right
     int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET;
     for (int theta = 0; theta <= NUM_POINTS_THETA; theta++) { // up and down
