@@ -1,3 +1,8 @@
+# Serial hardware interface module for communicating
+# with arduino. Implementation courtesy of Prof. Brad Minch.
+# See the link below for source:
+# Source: https://www.youtube.com/watch?v=2HeIXhYVpBU
+
 from serial import Serial
 from serial.tools import list_ports
 
