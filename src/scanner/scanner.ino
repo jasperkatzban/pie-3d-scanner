@@ -115,8 +115,8 @@ void two_servo_scan(){
       }
       servo_phi.write(angle_phi); // send angles to servos
       servo_theta.write(angle_theta); 
-      float averaged_reading = average_readings(); // take and average readings
       delay(MOVEMENT_DELAY_MS); // wait for the servo to reach the position
+      float averaged_reading = average_readings(); // take and average readings
 
       send_reading(angle_theta, angle_phi, averaged_reading); // send reading over serial
     }
@@ -138,8 +138,8 @@ float average_readings(){
   int s = 0; 
   int numpoints = NUM_SAMPLES_PER_ANGLE;
   for(int i = 0; i < numpoints; i++){
-    delay(1); // delay and read sensor vals
     s += analogRead(SENSOR_PIN); 
+    delay(1); // delay and read sensor vals
   }
   return s/numpoints; 
 }
