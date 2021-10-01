@@ -17,17 +17,17 @@
 #define SCAN_MODE_2D true
 
 // define scanning macros
-#define RESOLUTION 1
-#define NUM_POINTS_THETA 60
+#define RESOLUTION 1 // degree interval per sample
+#define NUM_POINTS_THETA 60 // number of samples per axis
 #define NUM_POINTS_PHI 60
-#define THETA_ANGLE_OFFSET 30
+#define THETA_ANGLE_OFFSET 30 // starting angle offsets
 #define PHI_ANGLE_OFFSET 37
 #define THETA_CENTER_ANGLE 60
-#define PHI_CENTER_ANGLE 65
-#define MOVEMENT_DELAY_MS 400 // 400 is a good value
-#define NUM_SAMPLES_PER_ANGLE 30
+#define PHI_CENTER_ANGLE 65 // origin angle offsets
+#define MOVEMENT_DELAY_MS 400 // delay between sampling to allow servos to move
+#define NUM_SAMPLES_PER_ANGLE 30 // number of samples to take and average per position
 
-// define start/stop messages
+// define start/stop message strings
 #define MSG_SCAN_START "start"
 #define MSG_SCAN_END "done"
 
@@ -58,7 +58,7 @@ void setup() {
   Serial.begin(SERIAL_BAUD_RATE); // initialize serial comms
   servo_theta.attach(SERVO_THETA_PIN);  // attaches up/down servo to pin 9
   servo_phi.attach(SERVO_PHI_PIN);      // attaches l/r servo to pin 10
-  reset_servos();
+  reset_servos(); // resets to center position
 }
 
 // main loop, continually check for input
@@ -66,7 +66,6 @@ void loop() {
   uint32_t t; // current time var
   bool button_high; // keep track of switch state
   t = millis(); // set current time timestamp
-  
   // debounce switch input
   if (t >= debounce_time + DEBOUNCE_INTERVAL) {
     button_high = digitalRead(BUTTON_PIN) == HIGH;
@@ -84,7 +83,7 @@ void loop() {
 // scan across field using servos and sends sensor readings via serial
 void scan(){
   Serial.println(MSG_SCAN_START); // send starting message
-  if (SCAN_MODE_2D){
+  if (SCAN_MODE_2D){ // perform scan
     servo_scan_2d(); 
   } else {
     servo_scan_3d(); 
@@ -94,13 +93,13 @@ void scan(){
   reset_servos();
 }
 
-// perform 2D scan with one servo, setting other to center angle
+// perform 2D scan with one yaw, setting the other to its center angle
 void servo_scan_2d(){
-  for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // left and right
-    int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET;
-    servo_phi.write(angle_phi);
+  for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // iterate over points to sample
+    int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET; // compute current angle
+    servo_phi.write(angle_phi); // write computed angle to servos
     servo_theta.write(THETA_CENTER_ANGLE); 
-    float averaged_reading = average_readings();
+    float averaged_reading = average_readings(); // average the readings
     delay(MOVEMENT_DELAY_MS); // wait for the servo to reach the position
     send_reading(THETA_CENTER_ANGLE, angle_phi, averaged_reading);
   }
@@ -108,12 +107,12 @@ void servo_scan_2d(){
 
 // perform scan using both servos
 void servo_scan_3d(){
-  for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // left and right
-    int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET;
-    for (int theta = 0; theta <= NUM_POINTS_THETA; theta++) { // up and down
+  for (int phi = 0; phi <= NUM_POINTS_PHI; phi++) { // // iterate over points to sample, left and right
+    int angle_phi = (phi * RESOLUTION) + PHI_ANGLE_OFFSET; // compute current yaw angle
+    for (int theta = 0; theta <= NUM_POINTS_THETA; theta++) { // // iterate over points to sample, up and down
       int angle_theta;
-      angle_theta = (theta * RESOLUTION) + THETA_ANGLE_OFFSET; // compute servo angle       
-      if(phi%2 != 0) { // reverse servo to achieve zigzag
+      angle_theta = (theta * RESOLUTION) + THETA_ANGLE_OFFSET; // compute current pitch angle       
+      if(phi%2 != 0) { // reverse servo based on yaw parity, zigzagging path
         angle_theta = (NUM_POINTS_THETA*RESOLUTION) - angle_theta + 2*THETA_ANGLE_OFFSET; 
       }
       servo_phi.write(angle_phi); // send angles to servos
